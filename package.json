@@ -6,7 +6,9 @@
   "main": "dist/index.js",
   "scripts": {
     "compile": "tsc && tsc-alias",
-    "start": "pnpm run compile && node ./dist/index.js"
+    "start:main": "node ./dist/index.js",
+    "start:email": "node ./dist/email.js",
+    "start": "pnpm run compile && concurrently -n \"main,email\"  \"pnpm run start:main\" \"pnpm run start:email\""
   },
   "keywords": [],
   "author": "",
@@ -15,11 +17,15 @@
   "dependencies": {
     "@apollo/server": "^4.12.2",
     "@prisma/client": "6.9.0",
+    "bullmq": "^5.53.3",
+    "dotenv": "^16.5.0",
     "graphql": "^16.11.0",
-    "graphql-parse-resolve-info": "^4.14.1"
+    "graphql-parse-resolve-info": "^4.14.1",
+    "nodemailer": "^7.0.3"
   },
   "devDependencies": {
     "@types/node": "^24.0.1",
+    "@types/nodemailer": "^6.4.17",
     "prisma": "^6.9.0",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.3",

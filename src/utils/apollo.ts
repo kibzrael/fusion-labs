@@ -1,4 +1,6 @@
+import type { EmailJob } from "@/types/email";
 import prisma from "@/utils/prisma.js";
+import queue from "@/utils/queue.js";
 import { parseResolveInfo } from "graphql-parse-resolve-info";
 
 export const schema = `#graphql
@@ -63,6 +65,8 @@ const hasField = (info: any, type: string, field: string) => {
   return Boolean(fields[field]);
 };
 
+const emailQueue = queue("email-notifications");
+
 export const resolvers = {
   Query: {
     user: (parent, { id }) => prisma.user.findUnique({ where: { id } }),
@@ -106,12 +110,40 @@ export const resolvers = {
       prisma.user.create({ data: { name, email } }),
     createLaptop: (parent, { model, brand, price }) =>
       prisma.laptop.create({ data: { model, brand, price } }),
-    purchaseLaptop: (parent, { userId, laptopId, amount }) =>
-      prisma.purchase.create({ data: { userId, laptopId, amount } }),
-    deliverLaptop: (parent, { purchaseId }) =>
-      prisma.purchase.update({
+    purchaseLaptop: async (parent, { userId, laptopId, amount }) => {
+      const purchase = await prisma.purchase.create({
+        data: { userId, laptopId, amount },
+        include: {
+          user: true,
+          laptop: true,
+        },
+      });
+      emailQueue.add("confirmation-email", {
+        email: purchase.user.email,
+        model: purchase.laptop.model,
+        purchaseId: purchase.id,
+        type: "confirmation",
+      } as EmailJob);
+      return purchase;
+    },
+    deliverLaptop: async (parent, { purchaseId }) => {
+      const purchase = await prisma.purchase.update({
         where: { id: purchaseId },
         data: { status: "delivered" },
-      }),
+        include: {
+          user: true,
+          laptop: true,
+        },
+      });
+
+      emailQueue.add("delivery-email", {
+        email: purchase.user.email,
+        model: purchase.laptop.model,
+        purchaseId: purchase.id,
+        type: "delivery",
+      } as EmailJob);
+
+      return purchase;
+    },
   },
 };
