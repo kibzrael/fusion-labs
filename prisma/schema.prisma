@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -41,9 +40,16 @@ model Purchase {
   laptop   Laptop @relation(fields: [laptopId], references: [id])
   amount   Float
 
+  status PurchaseStatus @default(pending)
+
   createdAt DateTime @default(now())
 
   notifications EmailNotification[]
+}
+
+enum PurchaseStatus {
+  pending
+  delivered
 }
 
 model EmailNotification {
@@ -53,8 +59,15 @@ model EmailNotification {
   purchaseId Int
   purchase   Purchase @relation(fields: [purchaseId], references: [id])
 
+  type NotificationType
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email, purchaseId])
+  @@index([email, purchaseId, type])
+}
+
+enum NotificationType {
+  confirmation
+  delivery
 }

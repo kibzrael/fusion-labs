@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "compile": "tsc",
-    "start": "npm run compile && node ./dist/index.js"
+    "compile": "tsc && tsc-alias",
+    "start": "pnpm run compile && node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,11 +15,13 @@
   "dependencies": {
     "@apollo/server": "^4.12.2",
     "@prisma/client": "6.9.0",
-    "graphql": "^16.11.0"
+    "graphql": "^16.11.0",
+    "graphql-parse-resolve-info": "^4.14.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.1",
     "prisma": "^6.9.0",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
