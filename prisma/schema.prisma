@@ -64,7 +64,7 @@ model EmailNotification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email, purchaseId, type])
+  @@unique([email, purchaseId, type])
 }
 
 enum NotificationType {

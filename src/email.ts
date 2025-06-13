@@ -9,19 +9,21 @@ const { connection } = await import("./utils/bullmq.js");
 const { nodemailer } = await import("./utils/nodemailer.js");
 
 const sendEmail = async (subject: string, message: string, data: EmailJob) => {
-  await nodemailer.sendMail({
-    from: `"Fusion" <${process.env.MAIL_APP_USER}>`,
-    to: data.email,
-    subject,
-    text: message,
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.emailNotification.create({
+      data: {
+        email: data.email,
+        purchaseId: data.purchaseId,
+        type: data.type,
+      },
+    });
 
-  await prisma.emailNotification.create({
-    data: {
-      email: data.email,
-      purchaseId: data.purchaseId,
-      type: "delivery",
-    },
+    await nodemailer.sendMail({
+      from: `"Fusion" <${process.env.MAIL_APP_USER}>`,
+      to: data.email,
+      subject,
+      text: message,
+    });
   });
 };
 
